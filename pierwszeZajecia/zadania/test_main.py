@@ -55,11 +55,11 @@ def test_get_patient_one():
 
 def test_get_patient_negative():
 	response = client.get("/patient/-3")
-	assert response.status_code == 404
-	assert response.json() == {"detail": "Item not found"}
+	assert response.status_code == 204
+	assert response.json() == {"detail": "No Content"}
 
 
 def test_get_patient_too_big():
 	response = client.get("/patient/323")
-	assert response.status_code == 404
-	assert response.json() == {"detail": "Item not found"}
+	assert response.status_code == 204
+	assert response.json() == {"detail": "No Content"}

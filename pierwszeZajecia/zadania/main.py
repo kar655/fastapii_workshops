@@ -38,5 +38,5 @@ def add_patient(new_patient: PatientReq):
 @app.get("/patient/{id}", response_model=PatientReq)
 def get_patient(id: int):
 	if id < 0 or id >= app.patient_id:
-		raise HTTPException(status_code=404, detail="Item not found")
+		raise HTTPException(status_code=204, detail="No Content")
 	return app.patients[id]
