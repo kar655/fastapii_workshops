@@ -6,3 +6,13 @@ class RootResponse(BaseModel):
 
 class MethodResponse(BaseModel):
 	method: str
+
+
+class PatientReq(BaseModel):
+	name: str
+	surename: str
+
+
+class PatientResp(BaseModel):
+	id: int
+	patient: PatientReq

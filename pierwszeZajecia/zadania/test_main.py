@@ -31,3 +31,17 @@ def test_method_delete():
 	response = client.delete("/method")
 	assert response.status_code == 200
 	assert response.json() == MethodResponse(method="DELETE")
+
+
+def test_add_patient_one():
+	new_patient = PatientReq(name="Ola", surename="Kowalska")
+	response = client.post("/patient", json=new_patient.dict())
+	assert response.status_code == 200
+	assert response.json() == PatientResp(id=0, patient=new_patient).dict()
+
+
+def test_add_patient_two():
+	new_patient = PatientReq(name="Ząb", surename="Żółty")
+	response = client.post("/patient", json=new_patient.dict())
+	assert response.status_code == 200
+	assert response.json() == PatientResp(id=1, patient=new_patient).dict()
