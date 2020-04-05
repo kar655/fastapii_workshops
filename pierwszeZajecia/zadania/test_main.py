@@ -33,15 +33,33 @@ def test_method_delete():
 	assert response.json() == MethodResponse(method="DELETE")
 
 
-def test_add_patient_one():
+def test_add_patient_zero():
 	new_patient = PatientReq(name="Ola", surename="Kowalska")
 	response = client.post("/patient", json=new_patient.dict())
 	assert response.status_code == 200
 	assert response.json() == PatientResp(id=0, patient=new_patient).dict()
 
 
-def test_add_patient_two():
+def test_add_patient_one():
 	new_patient = PatientReq(name="Ząb", surename="Żółty")
 	response = client.post("/patient", json=new_patient.dict())
 	assert response.status_code == 200
 	assert response.json() == PatientResp(id=1, patient=new_patient).dict()
+
+
+def test_get_patient_one():
+	new_patient = PatientReq(name="Ząb", surename="Żółty")
+	response = client.get("/patient/1")
+	assert response.status_code == 200
+	assert response.json() == new_patient.dict()
+
+def test_get_patient_negative():
+	response = client.get("/patient/-3")
+	assert response.status_code == 404
+	assert response.json() == {"detail": "Item not found"}
+
+
+def test_get_patient_too_big():
+	response = client.get("/patient/323")
+	assert response.status_code == 404
+	assert response.json() == {"detail": "Item not found"}
