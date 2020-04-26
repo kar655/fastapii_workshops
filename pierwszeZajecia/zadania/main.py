@@ -1,16 +1,19 @@
 from fastapi import FastAPI, HTTPException, Response, Cookie, Depends, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
-from starlette.responses import RedirectResponse
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from responses import *
 from hashlib import sha256
 import secrets
 
 app = FastAPI()
+app.secret_key = "random text"
 app.patient_id = 0
 app.patients = []
 
 security = HTTPBasic()
+
+
 
 @app.get("/", response_model=RootResponse)
 def root():
@@ -76,12 +79,18 @@ def add_patient(new_patient: PatientReq):
 
 @app.post("/login")
 def login(response: Response, credentials: HTTPBasicCredentials = Depends(security)):
-	# if secrets.compare_digest(credentials.username, "trudnY") and \
-	# 	secrets.compare_digest(credentials.password, "PaC1Ent"):
-	if credentials.username == "trudnY" and credentials.password == "PaC1Ent":
 
-		response.set_cookie(key="session_token", value="session")
-		return RedirectResponse(url='/welcome')
+	if secrets.compare_digest(credentials.username, "trudnY") and \
+		secrets.compare_digest(credentials.password, "PaC1Ent"):
+
+		session_token = sha256(bytes(
+			f"{credentials.username}{credentials.password}{app.secret_key}",
+			encoding="utf8")).hexdigest()
+
+		response = RedirectResponse(url='/welcome')
+		response.status_code = status.HTTP_302_FOUND
+		response.set_cookie(key="session_token", value=session_token)
+		return response
 
 	else:
 		raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
