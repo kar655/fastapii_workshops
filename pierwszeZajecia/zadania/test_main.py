@@ -45,6 +45,7 @@ def test_login_bad():
 def test_login_good():
 	response = client.post("/login", json={"login": "trudnY", "password": "PaC13Nt"})
 	assert response.status_code == 302
+	assert response.json() == WelcomeResponse(message="Welcome!")
 
 def test_add_patient_zero():
 	new_patient = PatientReq(name="Ola", surename="Kowalska")
