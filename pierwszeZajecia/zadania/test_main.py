@@ -40,11 +40,11 @@ def test_method_delete():
 def test_login_bad():
 	response = client.post("/login", json={"login": "Ala", "password": "Kowalska"})
 	assert response.status_code == 401
-	assert response.json() == {"detail": "Incorrect email or password"}
+	assert response.json() == {"detail": "Not authenticated"}
 
 def test_login_good():
 	response = client.post("/login", json={"login": "trudnY", "password": "PaC13Nt"})
-	assert response.status_code == 200
+	assert response.status_code == 302
 
 def test_add_patient_zero():
 	new_patient = PatientReq(name="Ola", surename="Kowalska")

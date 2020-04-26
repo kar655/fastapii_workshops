@@ -45,36 +45,46 @@ def add_patient(new_patient: PatientReq):
 
 
 
-def check_username(credentials: HTTPBasicCredentials = Depends(security)):
-	correct_username = secrets.compare_digest(credentials.username, "trudnY")
-	correct_password = secrets.compare_digest(credentials.password, "PaC13Nt")
+# def check_user(credentials: HTTPBasicCredentials = Depends(security)):
 
-	if not (correct_username and correct_password):
-		raise HTTPException(
-			status_code=status.HTTP_401_UNAUTHORIZED
-		)
-	return credentials.username
+# 	correct_username = secrets.compare_digest(credentials.username, "trudnY")
+# 	correct_password = secrets.compare_digest(credentials.password, "PaC13Nt")
 
+# 	if not (correct_username and correct_password):
+# 		raise HTTPException(
+# 			status_code=status.HTTP_401_UNAUTHORIZED
+# 		)
+
+# 	return credentials
+
+
+
+# @app.post("/login")
+# def login(response: Response, credentials = Depends(check_user)):
+
+# 	session_token = sha256(bytes(f"{credentials.username}{credentials.password}",
+# 		encoding="utf8")).hexdigest()
+
+# 	# response = RedirectResponse(url="/welcome")
+
+# 	response.set_cookie(key="session_token", value=session_token)
+# 	response.status_code = status.HTTP_302_FOUND
+
+# 	# return response
+# 	return RedirectResponse(url="/welcome")
 
 
 @app.post("/login")
-def login(login: str, password: str,
-	response: Response, username: str = Depends(check_username)):
+def login(response: Response, credentials: HTTPBasicCredentials = Depends(security)):
+	# if secrets.compare_digest(credentials.username, "trudnY") and \
+	# 	secrets.compare_digest(credentials.password, "PaC1Ent"):
+	if credentials.username == "trudnY" and credentials.password == "PaC1Ent":
 
-	session_token = sha256(bytes(f"{login}{password}", encoding="utf8")).hexdigest()
-	response.set_cookie(key="session_token", value=session_token)
+		response.set_cookie(key="session_token", value="session")
+		return RedirectResponse(url='/welcome')
 
-	RedirectResponse(url="/welcome")
-
-# @app.post("/login")
-# def login(login: str, password: str, response: Response, user: str = Depends()):
-# 	if login == "trudnY" and password == "PaC13Nt":
-# 		session_token = sha256(bytes(f"{login}{password}", encoding="utf8")).hexdigest()
-# 		response.set_cookie(key="session_token", value=session_token)
-
-# 		RedirectResponse(url="/welcome")
-# 	else:
-# 		raise HTTPException(status_code=401, detail="Unauthorized")
+	else:
+		raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
 
 
 
