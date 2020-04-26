@@ -14,6 +14,9 @@ class PatientReq(BaseModel):
 	name: str
 	surename: str
 
+class LoginReq(BaseModel):
+	login: str
+	password: str
 
 class PatientResp(BaseModel):
 	id: int
