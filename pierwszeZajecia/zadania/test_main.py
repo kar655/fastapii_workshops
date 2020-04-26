@@ -12,6 +12,11 @@ def test_root():
 	assert response.status_code == 200
 	assert response.json() == RootResponse(message="Hello World during the coronavirus pandemic!")
 
+def test_welcome():
+	response = client.get("/welcome")
+	assert response.status_code == 200
+	assert response.json() == WelcomeResponse(message="Welcome!")
+
 def test_method_get():
 	response = client.get("/method")
 	assert response.status_code == 200

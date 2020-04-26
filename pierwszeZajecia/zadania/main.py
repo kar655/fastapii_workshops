@@ -10,7 +10,9 @@ app.patients = []
 def root():
 	return RootResponse(message="Hello World during the coronavirus pandemic!")
 
-
+@app.get("/welcome", response_model=WelcomeResponse)
+def welcome():
+	return WelcomeResponse(message="Welcome!")
 
 @app.get("/method", response_model=MethodResponse)
 def method():
