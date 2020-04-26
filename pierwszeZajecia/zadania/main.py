@@ -11,6 +11,8 @@ app.secret_key = "random text"
 app.patient_id = 0
 app.patients = []
 
+app.key = sha256(bytes(f"trudnYPaC1Entrandom text",encoding="utf8")).hexdigest()
+
 security = HTTPBasic()
 
 
@@ -97,7 +99,21 @@ def login(response: Response, credentials: HTTPBasicCredentials = Depends(securi
 
 
 @app.get("/patient/{id}", response_model=PatientReq)
-def get_patient(id: int):
+def get_patient(id: int, session_token: str = Cookie(None)):
+	if session_token != app.key:
+		raise HTTPException(status_code=403, detail="Unathorised")
 	if id < 0 or id >= app.patient_id:
 		raise HTTPException(status_code=204, detail="No Content")
 	return app.patients[id]
+
+
+
+
+@app.post("/logout")
+def create_cookie(*, response: Response, session_token: str = Cookie(None)):
+	# print(response)
+	# print(session_token)
+	if session_token != app.key :
+		raise HTTPException(status_code=403, detail="Unathorised")
+	response.set_cookie(key="session_token", value="0")
+
