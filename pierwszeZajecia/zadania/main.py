@@ -77,7 +77,7 @@ def add_patient(new_patient: PatientReq):
 # 	return RedirectResponse(url="/welcome")
 
 
-@app.post("/login")
+@app.post("/login", status_code=status.HTTP_302_FOUND)
 def login(response: Response, credentials: HTTPBasicCredentials = Depends(security)):
 
 	if secrets.compare_digest(credentials.username, "trudnY") and \
@@ -88,8 +88,8 @@ def login(response: Response, credentials: HTTPBasicCredentials = Depends(securi
 			encoding="utf8")).hexdigest()
 
 		response = RedirectResponse(url='/welcome')
-		response.status_code = status.HTTP_302_FOUND
 		response.set_cookie(key="session_token", value=session_token)
+		response.status_code = status.HTTP_302_FOUND
 		return response
 
 	else:
