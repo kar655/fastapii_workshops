@@ -80,8 +80,7 @@ def add_patient(new_patient: PatientReq):
 @app.post("/login", status_code=status.HTTP_302_FOUND)
 def login(response: Response, credentials: HTTPBasicCredentials = Depends(security)):
 
-	if secrets.compare_digest(credentials.username, "trudnY") and \
-		secrets.compare_digest(credentials.password, "PaC1Ent"):
+	if secrets.compare_digest(credentials.username, "trudnY") and secrets.compare_digest(credentials.password, "PaC1Ent"):
 
 		session_token = sha256(bytes(
 			f"{credentials.username}{credentials.password}{app.secret_key}",
