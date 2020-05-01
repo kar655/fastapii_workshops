@@ -133,12 +133,22 @@ def create_cookie(*, response: Response, session_token: str = Cookie(None)):
 	response.set_cookie(key="session_token", value="0")
 
 
+#assert resp == [
+#{"TrackId":7,"Name":"Let's Get It Up","AlbumId":1,"MediaTypeId":1,
+#"GenreId":1,"Composer":"Angus Young, Malcolm Young, Brian Johnson",
+#"Milliseconds":233926,"Bytes":7636561,"UnitPrice":0.99},
+#
+#{"TrackId":8,
+#"Name":"Inject The Venom","AlbumId":1,"MediaTypeId":1,"GenreId":1,
+#"Composer":"Angus Young, Malcolm Young, Brian Johnson","Milliseconds":210834,
+#"Bytes":6852860,"UnitPrice":0.99}]
+
 @app.get("/tracks")#/{page}/{per_page}") #response_model=List[Track])
 async def get_tracks(page: int = 0, per_page: int = 10):
 	app.db_connection.row_factory = sqlite3.Row
 	# data = app.db_connection.execute("SELECT * FROM tracks LIMIT 10").fetchall()
 	data = app.db_connection.execute(
-		"SELECT * FROM tracks LIMIT ? OFFSET ?", (per_page, page, )).fetchall()
+		"SELECT * FROM tracks LIMIT ? OFFSET ?", (per_page, page * per_page, )).fetchall()
 
 	# data = app.db_connection.execute(
 	# 	f"SELECT * FROM tracks LIMIT {per_page}").fetchall()
