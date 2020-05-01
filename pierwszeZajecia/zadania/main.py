@@ -138,7 +138,7 @@ async def get_tracks(page: int = 0, per_page: int = 10):
 	app.db_connection.row_factory = sqlite3.Row
 	# data = app.db_connection.execute("SELECT * FROM tracks LIMIT 10").fetchall()
 	data = app.db_connection.execute(
-		"SELECT * FROM tracks LIMIT ?", (per_page,)).fetchall()
+		"SELECT * FROM tracks LIMIT ? OFFSET ?", (per_page, page, )).fetchall()
 
 	# data = app.db_connection.execute(
 	# 	f"SELECT * FROM tracks LIMIT {per_page}").fetchall()
