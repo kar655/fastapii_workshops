@@ -146,7 +146,8 @@ async def get_tracks(page: int = 0, per_page: int = 10):
 
 @app.get("/tracks/composers")
 async def get_composers(composer_name: str):
-	app.db_connection.row_factory = sqlite3.Row
+	# app.db_connection.row_factory = sqlite3.Row
+	app.db_connection.row_factory = lambda cursor, x: x[0]
 
 	data = app.db_connection.execute(
 		"SELECT tracks.Name FROM tracks WHERE tracks.Composer = ? ORDER BY tracks.Name", (composer_name,)).fetchall()
