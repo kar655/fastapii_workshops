@@ -254,4 +254,5 @@ async def update_customer(customer_id: int, new_customer: CustomerUpdate):
 
 	# print(f"\n{tuple(old_customer21)=}")
 
-	return update_item
+	# return update_item
+	return old_customer_model
