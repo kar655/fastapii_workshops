@@ -198,7 +198,16 @@ async def get_album(album_id: int):
 #     return updated_item
 
 @app.patch("/customers/{customer_id}", response_model=CustomerResponse)
-async def update_customer(customer_id: int, new_customer: CustomerUpdateUpper):
+async def update_customer(customer_id: int, new_customer: CustomerUpdate):
+
+	new_customer = CustomerUpdateUpper(Company=new_customer.company, 
+		Address=new_customer.address, 
+		City=new_customer.city, 
+		State=new_customer.state, 
+		Country=new_customer.country, 
+		PostalCode=new_customer.postalcode, 
+		Fax=new_customer.fax)
+
 	# print("PROCESSING")
 	app.db_connection.row_factory = sqlite3.Row
 	old_customer = app.db_connection.execute(
