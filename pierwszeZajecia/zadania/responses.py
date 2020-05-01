@@ -75,3 +75,10 @@ class CustomerResponse(BaseModel):
 	Fax: str = None
 	Email: str = None
 	SupportRepId: int = 0
+
+
+class SalesResponse(BaseModel):
+	CustomerId: int
+	Email: str
+	Phone: str
+	Sum: float
