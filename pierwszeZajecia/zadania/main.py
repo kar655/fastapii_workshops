@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Response, Cookie, Depends, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.responses import RedirectResponse
+from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from typing import List
 from responses import *
@@ -179,9 +180,69 @@ async def post_album(new_album: NewAlbum):
 async def get_album(album_id: int):
 	app.db_connection.row_factory = sqlite3.Row
 	album = app.db_connection.execute(
-		"SELECT * FROM albums WHERE albums.AlbumId = ?", (album_id,)).fetchone()
+		"SELECT * FROM albums WHERE albums.AlbumId = :AlbumId", {"AlbumId": album_id}).fetchone() #(album_id,)).fetchone()
 
 	if album == None:
 		raise HTTPException(status_code=404, detail="error")
 
 	return album
+
+
+# @app.patch("/items/{item_id}", response_model=Item)
+# async def update_item(item_id: str, item: Item):
+#     stored_item_data = items[item_id]
+#     stored_item_model = Item(**stored_item_data)
+#     update_data = item.dict(exclude_unset=True)
+#     updated_item = stored_item_model.copy(update=update_data)
+#     items[item_id] = jsonable_encoder(updated_item)
+#     return updated_item
+
+@app.patch("/customers/{customer_id}", response_model=CustomerResponse)
+async def update_customer(customer_id: int, new_customer: CustomerUpdateUpper):
+	# print("PROCESSING")
+	app.db_connection.row_factory = sqlite3.Row
+	old_customer = app.db_connection.execute(
+		"SELECT * FROM customers WHERE customers.CustomerId = ?", (customer_id,)).fetchone()
+
+	if old_customer == None:
+		raise HTTPException(status_code=404, detail="error")
+
+	# print(f"\n{dict(old_customer)=}")
+
+	old_customer_data = dict(old_customer)
+	old_customer_model = CustomerResponse(**old_customer_data)
+	# print(f"\n{old_customer_model=}")
+
+	update_data = new_customer.dict(exclude_unset=True)
+	# print(f"\n{update_data=}")
+
+	update_item = old_customer_model.copy(update=update_data)
+	# print(f"\n{old_customer_model=}")
+	# print(f"\n{old_customer_model.copy(update=update_data)=}")
+
+	# print("\n\n\n")
+	# print(f"\n{update_item=}")
+	# print("\n\n\n")
+	# print(f"{jsonable_encoder(update_item)=}")
+
+	# print(f"\n{update_item.dict()=}")
+	nowe = CustomerUpdateUpper(**update_item.dict()).dict()
+	nowe.update({"CustomerId": old_customer_model.CustomerId})
+
+	# print(f"\n{nowe=}")
+
+	cursor = app.db_connection.execute(
+		"UPDATE customers SET Company = :Company, Address = :Address,\
+		City = :City, State = :State, Country = :Country,\
+		PostalCode = :PostalCode, Fax = :Fax \
+		WHERE customers.CustomerId = :CustomerId", nowe)
+
+	app.db_connection.commit()
+
+
+	# old_customer21 = app.db_connection.execute(
+	# 	"SELECT * FROM customers WHERE customers.CustomerId = ?", (customer_id,)).fetchone()
+
+	# print(f"\n{tuple(old_customer21)=}")
+
+	return update_item

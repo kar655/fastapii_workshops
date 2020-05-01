@@ -42,3 +42,36 @@ class AlbumResponse(BaseModel):
 	AlbumId: int
 	Title: str
 	ArtistId: int
+
+class CustomerUpdate(BaseModel):
+	company: str = None
+	address: str = None
+	city: str = None
+	state: str = None
+	country: str = None
+	postalcode: str = None
+	fax: str = None
+
+class CustomerUpdateUpper(BaseModel):
+	Company: str = None
+	Address: str = None
+	City: str = None
+	State: str = None
+	Country: str = None
+	PostalCode: str = None
+	Fax: str = None
+
+class CustomerResponse(BaseModel):
+	CustomerId: int = 0
+	FirstName: str = None
+	LastName: str = None
+	Company: str = None
+	Address: str = None
+	City: str = None
+	State: str = None
+	Country: str = None
+	PostalCode: str = None
+	Phone: str = None
+	Fax: str = None
+	Email: str = None
+	SupportRepId: int = 0
