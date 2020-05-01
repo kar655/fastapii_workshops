@@ -33,3 +33,12 @@ class Track(BaseModel):
 	Milliseconds: int
 	Bytes: int
 	UnitPrice: float
+
+class NewAlbum(BaseModel):
+	title: str
+	artist_id: int
+
+class AlbumResponse(BaseModel):
+	AlbumId: int
+	Title: str
+	ArtistId: int

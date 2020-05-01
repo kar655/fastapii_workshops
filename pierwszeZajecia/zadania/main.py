@@ -156,3 +156,32 @@ async def get_composers(composer_name: str):
 		raise HTTPException(status_code=404, detail="error")
 	else:
 		return data
+
+
+@app.post("/albums", response_model=AlbumResponse, status_code=201)
+async def post_album(new_album: NewAlbum):
+	app.db_connection.row_factory = sqlite3.Row
+	artist = app.db_connection.execute(
+		"SELECT artists.ArtistId FROM artists WHERE artists.ArtistId = ?", (new_album.artist_id, )).fetchone()
+
+	if artist == None:
+		raise HTTPException(status_code=404, detail="error")
+
+	cursor = app.db_connection.execute(
+		"INSERT INTO albums (Title, ArtistId) VALUES (?, ?)", (new_album.title, new_album.artist_id,))
+	app.db_connection.commit()
+	new_album_id = cursor.lastrowid
+
+	return AlbumResponse(AlbumId=new_album_id, Title=new_album.title, ArtistId=new_album.artist_id)
+
+
+@app.get("/albums/{album_id}", response_model=AlbumResponse)
+async def get_album(album_id: int):
+	app.db_connection.row_factory = sqlite3.Row
+	album = app.db_connection.execute(
+		"SELECT * FROM albums WHERE albums.AlbumId = ?", (album_id,)).fetchone()
+
+	if album == None:
+		raise HTTPException(status_code=404, detail="error")
+
+	return album
