@@ -197,7 +197,7 @@ async def get_album(album_id: int):
 #     items[item_id] = jsonable_encoder(updated_item)
 #     return updated_item
 
-@app.patch("/customers/{customer_id}", response_model=CustomerResponse)
+@app.put("/customers/{customer_id}", response_model=CustomerResponse)
 async def update_customer(customer_id: int, new_customer: CustomerUpdate):
 
 	new_customer = CustomerUpdateUpper(Company=new_customer.company, 
