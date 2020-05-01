@@ -2,9 +2,11 @@ from fastapi import FastAPI, HTTPException, Response, Cookie, Depends, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
+from typing import List
 from responses import *
 from hashlib import sha256
 import secrets
+import sqlite3
 
 app = FastAPI()
 app.secret_key = "random text"
@@ -15,6 +17,19 @@ app.key = sha256(bytes(f"trudnYPaC1Entrandom text",encoding="utf8")).hexdigest()
 
 security = HTTPBasic()
 
+
+
+@app.on_event("startup")
+async def startup():
+	print("OPEN CONNECTION------------------------------------------------")
+	app.db_connection = sqlite3.connect('chinook.db')
+	print(app.db_connection)
+
+
+@app.on_event("shutdown")
+async def shutdown():
+	print("CLOSE CONNECTION------------------------------------------------")
+	app.db_connection.close()
 
 
 @app.get("/", response_model=RootResponse)
@@ -117,3 +132,16 @@ def create_cookie(*, response: Response, session_token: str = Cookie(None)):
 		raise HTTPException(status_code=403, detail="Unathorised")
 	response.set_cookie(key="session_token", value="0")
 
+
+@app.get("/tracks")#/{page}/{per_page}") #response_model=List[Track])
+async def get_tracks(page: int = 0, per_page: int = 10):
+	app.db_connection.row_factory = sqlite3.Row
+	# data = app.db_connection.execute("SELECT * FROM tracks LIMIT 10").fetchall()
+	data = app.db_connection.execute(
+		"SELECT * FROM tracks LIMIT ?", (per_page,)).fetchall()
+
+	# data = app.db_connection.execute(
+	# 	f"SELECT * FROM tracks LIMIT {per_page}").fetchall()
+
+	# print(data)
+	return data;

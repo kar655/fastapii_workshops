@@ -21,3 +21,15 @@ class LoginReq(BaseModel):
 class PatientResp(BaseModel):
 	id: int
 	patient: PatientReq
+
+
+class Track(BaseModel):
+	TrackId: int
+	Name: str
+	AlbumId: int
+	MediaTypeId: int
+	GenreId: int
+	Composer: str
+	Milliseconds: int
+	Bytes: int
+	UnitPrice: float
