@@ -8,6 +8,8 @@ from responses import *
 from hashlib import sha256
 import secrets
 import sqlite3
+import operator
+
 
 app = FastAPI()
 app.secret_key = "random text"
@@ -332,7 +334,9 @@ async def get_sales(request: Request):
 	SalesResponse(CustomerId=lastCustomer[0], Email=lastCustomer[1], Phone=lastCustomer[2], Sum=round(lastSum, 2))
 	)
 
+	result_sorted = sorted(result, key=operator.attrgetter("CustomerId"))
+	result_sorted = sorted(result_sorted, key=operator.attrgetter("Sum"), reverse=True)
 
-	return result
+	return result_sorted
 
 	# return data
