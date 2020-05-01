@@ -334,7 +334,7 @@ async def get_sales(request: Request):
 	SalesResponse(CustomerId=lastCustomer[0], Email=lastCustomer[1], Phone=lastCustomer[2], Sum=round(lastSum + lastCustomer[3], 2))
 	)
 
-	result_sorted = sorted(result, key=operator.attrgetter("CustomerId"), reverse=True)
+	result_sorted = sorted(result, key=operator.attrgetter("CustomerId"))
 	result_sorted = sorted(result_sorted, key=operator.attrgetter("Sum"), reverse=True)
 
 	return result_sorted
