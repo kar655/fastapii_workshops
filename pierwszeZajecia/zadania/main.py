@@ -200,7 +200,8 @@ async def get_album(album_id: int):
 @app.put("/customers/{customer_id}", response_model=CustomerResponse)
 async def update_customer(customer_id: int, new_customer: CustomerUpdate):
 
-	new_customer = CustomerUpdateUpper(Company=new_customer.company, 
+	new_customer = CustomerUpdateUpper(
+		Company=new_customer.company, 
 		Address=new_customer.address, 
 		City=new_customer.city, 
 		State=new_customer.state, 
@@ -254,5 +255,5 @@ async def update_customer(customer_id: int, new_customer: CustomerUpdate):
 
 	# print(f"\n{tuple(old_customer21)=}")
 
-	# return update_item
-	return old_customer_model
+	return update_item
+	# return old_customer_model
