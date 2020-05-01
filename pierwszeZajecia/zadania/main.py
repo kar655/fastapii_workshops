@@ -263,7 +263,7 @@ async def update_customer(customer_id: int, new_customer: CustomerUpdate):
 	return result
 
 
-@app.get("/sales")
+@app.get("/sales", response_model=List[SalesResponse])
 async def get_sales(request: Request):
 	# print(f"{request.query_params=}")
 
@@ -289,24 +289,50 @@ async def get_sales(request: Request):
 # JOIN artists ON albums.artistid = artists.artistid;
 
 	app.db_connection.row_factory = sqlite3.Row
+	# data = app.db_connection.execute(
+	# 	"SELECT customers.CustomerId, customers.Email, customers.Phone, invoices.Total AS Sum FROM customers \
+	# 	JOIN invoices ON customers.CustomerId = invoices.CustomerId \
+	# 	ORDER BY invoices.Total DESC, customers.CustomerId ASC").fetchall()# \
 	data = app.db_connection.execute(
-		"SELECT customers.CustomerId, customers.Email, customers.Phone, invoices.Total AS Sum FROM customers \
-		JOIN invoices ON customers.CustomerId = invoices.CustomerId \
-		ORDER BY invoices.Total DESC, customers.CustomerId ASC").fetchall()# \
-		#WHERE customers.CustomerId IN (?)", (ids,)).fetchall()
+	"SELECT customers.CustomerId, customers.Email, customers.Phone, invoices.Total AS Sum FROM customers \
+	JOIN invoices ON customers.CustomerId = invoices.CustomerId \
+	ORDER BY customers.CustomerId ASC").fetchall()# \
+
 
 	# print(f"{data=}")
 
-	# result = []
+	first = True
+	result = []
+	lastSum = 0
+	lastCustomer = None
 
-	# for x in data:
-	# 	temp = tuple(x)
-	# 	# print(f"{temp=}")
-	# 	#if temp[0] in ids:
-	# 	result.append(
-	# 		SalesResponse(CustomerId=x[0], Email=x[1], Phone=x[2], Sum=x[3])
-	# 		)
+	for x in data:
+		if first:
+			lastCustomer = x
+			lastSum = x[3]
+			first = False
+			continue
 
-	# return result
+		if x[0] == lastCustomer[0]:
+			lastSum += x[3]
+		else:
+			result.append(
+			SalesResponse(CustomerId=lastCustomer[0], Email=lastCustomer[1], Phone=lastCustomer[2], Sum=round(lastSum, 2))
+			)
+			lastSum = 0
+			lastCustomer = x
 
-	return data
+
+		# result.append(
+		# 	SalesResponse(CustomerId=x[0], Email=x[1], Phone=x[2], Sum=x[3])
+		# 	)
+
+	# add last guy
+	result.append(
+	SalesResponse(CustomerId=lastCustomer[0], Email=lastCustomer[1], Phone=lastCustomer[2], Sum=round(lastSum, 2))
+	)
+
+
+	return result
+
+	# return data

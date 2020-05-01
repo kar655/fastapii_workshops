@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 
 class RootResponse(BaseModel):
 	message: str
@@ -80,5 +81,5 @@ class CustomerResponse(BaseModel):
 class SalesResponse(BaseModel):
 	CustomerId: int
 	Email: str
-	Phone: str
+	Phone: Optional[str]
 	Sum: float
