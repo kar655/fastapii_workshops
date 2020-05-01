@@ -267,14 +267,14 @@ async def update_customer(customer_id: int, new_customer: CustomerUpdate):
 async def get_sales(request: Request):
 	# print(f"{request.query_params=}")
 
-	if "category" not in request.query_params.keys():
+	if "category" not in request.query_params.keys() or request.query_params['category'] != 'customers':
 		raise HTTPException(status_code=404, detail="error")
 
 	# print(f"{request.query_params['category']=}")
 
-	ids = [int(x) for x in request.query_params['category']]
+	#ids = [int(x) for x in request.query_params['category']]
 	# print(f"{ids=}")
-	
+
 	# Parametr ?category=customers zwróci statystykę wydatków poszczególnych klientów sklepu,
 	 # wraz z ich numerem id, adresem email i numerem telefonu, RODO rules ;) .
 
@@ -290,25 +290,23 @@ async def get_sales(request: Request):
 
 	app.db_connection.row_factory = sqlite3.Row
 	data = app.db_connection.execute(
-		"SELECT customers.CustomerId, customers.Email, customers.Phone, invoices.Total FROM customers \
+		"SELECT customers.CustomerId, customers.Email, customers.Phone, invoices.Total AS Sum FROM customers \
 		JOIN invoices ON customers.CustomerId = invoices.CustomerId \
 		ORDER BY invoices.Total DESC, customers.CustomerId ASC").fetchall()# \
 		#WHERE customers.CustomerId IN (?)", (ids,)).fetchall()
 
 	# print(f"{data=}")
 
-	result = []
+	# result = []
 
-	for x in data:
-		temp = tuple(x)
-		# print(f"{temp=}")
-		if temp[0] in ids:
-			result.append(
-				SalesResponse(CustomerId=x[0], Email=x[1], Phone=x[2], Sum=x[3])
-				)
-	# result = [
-	# SalesResponse(CustomerId=x.CustomerId, Email=x.Email, Phone=x.Phone, Sum=x.Total) 
-	# for x in data if x.CustomerId in ids
-	# ]
+	# for x in data:
+	# 	temp = tuple(x)
+	# 	# print(f"{temp=}")
+	# 	#if temp[0] in ids:
+	# 	result.append(
+	# 		SalesResponse(CustomerId=x[0], Email=x[1], Phone=x[2], Sum=x[3])
+	# 		)
 
-	return result
+	# return result
+
+	return data
