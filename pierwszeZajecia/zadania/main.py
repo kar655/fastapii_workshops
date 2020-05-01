@@ -21,14 +21,11 @@ security = HTTPBasic()
 
 @app.on_event("startup")
 async def startup():
-	print("OPEN CONNECTION------------------------------------------------")
 	app.db_connection = sqlite3.connect('chinook.db')
-	print(app.db_connection)
 
 
 @app.on_event("shutdown")
 async def shutdown():
-	print("CLOSE CONNECTION------------------------------------------------")
 	app.db_connection.close()
 
 
@@ -145,3 +142,16 @@ async def get_tracks(page: int = 0, per_page: int = 10):
 
 	# print(data)
 	return data;
+
+
+@app.get("/tracks/composers")
+async def get_composers(composer_name: str):
+	app.db_connection.row_factory = sqlite3.Row
+
+	data = app.db_connection.execute(
+		"SELECT tracks.Name FROM tracks WHERE tracks.Composer = ? ORDER BY tracks.Name", (composer_name,)).fetchall()
+
+	if len(data) == 0:
+		raise HTTPException(status_code=404, detail="error")
+	else:
+		return data
