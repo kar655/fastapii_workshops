@@ -397,8 +397,9 @@ def genres_sale():
 	app.db_connection.row_factory = sqlite3.Row
 
 	data = app.db_connection.execute(
-		"SELECT genres.Name, tracks.GenreId FROM genres \
+		"SELECT genres.Name, invoice_items.Quantity As Sum FROM genres \
 		JOIN tracks ON tracks.GenreId = genres.GenreId \
+		JOIN invoice_items ON invoice_items.TrackId = tracks.TrackId \
 		ORDER BY genres.Name ASC").fetchall()
 
 	first = True
@@ -407,21 +408,21 @@ def genres_sale():
 	lastTrack = None
 
 	# x[0] - Name
-	# x[1] - GenreId
+	# x[1] - Sum
 	for x in data:
 		# print(f"{x[0]=}\t\t{x[1]=}")
 		if first:
 			first = False
 			lastTrack = x
-			lastSum = 1
+			lastSum = x[1]
 			continue
 
-		if x[1] == lastTrack[1]:
-			lastSum += 1
+		if x[0] == lastTrack[0]:
+			lastSum += x[1]
 		else:
 			result.append(
 				GenresResponse(Name=lastTrack[0], Sum=lastSum))
-			lastSum = 1
+			lastSum = x[1]
 			lastTrack = x
 
 
