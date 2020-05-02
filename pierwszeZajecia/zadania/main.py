@@ -326,31 +326,7 @@ async def update_customer(customer_id: int, new_customer: CustomerUpdate):
 	# return result
 
 
-@app.get("/sales", response_model=List[SalesResponse])
-async def get_sales(request: Request):
-	# print(f"{request.query_params=}")
-
-	if "category" not in request.query_params.keys() or request.query_params['category'] != 'customers':
-		raise HTTPException(status_code=404, detail="error")
-
-	# print(f"{request.query_params['category']=}")
-
-	#ids = [int(x) for x in request.query_params['category']]
-	# print(f"{ids=}")
-
-	# Parametr ?category=customers zwróci statystykę wydatków poszczególnych klientów sklepu,
-	 # wraz z ich numerem id, adresem email i numerem telefonu, RODO rules ;) .
-
-
- #    Wyniki mają być filtrowane po sumie wydatków od największych oraz po numerze id klienta.
-
- #    Suma powinna być zaokrąglona do 2-ch miejsc po przecinku.
-
-
-# SELECT tracks.name, artists.name FROM tracks
-# JOIN albums ON tracks.albumid = albums.albumid
-# JOIN artists ON albums.artistid = artists.artistid;
-
+def customers_sale():
 	app.db_connection.row_factory = sqlite3.Row
 	# data = app.db_connection.execute(
 	# 	"SELECT customers.CustomerId, customers.Email, customers.Phone, invoices.Total AS Sum FROM customers \
@@ -400,5 +376,143 @@ async def get_sales(request: Request):
 	result_sorted = sorted(result_sorted, key=operator.attrgetter("Sum"), reverse=True)
 
 	return result_sorted
+
+
+# parametr ?category=genres zwróci statystykę łącznej liczby sprzedanych utworów w poszczególnych gatunkach muzycznych.
+
+#     Wynik ma być posortowany w kolejności od najlepiej sprzedającego się gatunku oraz po nazwie.
+
+#     W przypadku prawidłowego wykonania zapytania aplikacja zwróci kod 200
+
+
+#     Wynik powinien być listą obiektów wg. poniższego przykładu.  gdzie: 
+
+
+#     Name - nazwa gatunku muzycznego z tabeli genres 
+
+#     Sum - suma, sztuk, wszystkich sprzedanych utworów w danym gatunku z tabeli invoice_items
+
+
+def genres_sale():
+	app.db_connection.row_factory = sqlite3.Row
+
+	data = app.db_connection.execute(
+		"SELECT genres.Name, tracks.GenreId FROM genres \
+		JOIN tracks ON tracks.GenreId = genres.GenreId \
+		ORDER BY genres.Name ASC").fetchall()
+
+	first = True
+	result = []
+	lastSum = 0
+	lastTrack = None
+
+	# x[0] - Name
+	# x[1] - GenreId
+	for x in data:
+		# print(f"{x[0]=}\t\t{x[1]=}")
+		if first:
+			first = False
+			lastTrack = x
+			lastSum = 1
+			continue
+
+		if x[1] == lastTrack[1]:
+			lastSum += 1
+		else:
+			result.append(
+				GenresResponse(Name=lastTrack[0], Sum=lastSum))
+			lastSum = 1
+			lastTrack = x
+
+
+	# add last track
+	result.append(GenresResponse(Name=lastTrack[0], Sum=lastSum))
+
+	result_sorted = sorted(result, key=operator.attrgetter("Sum"), reverse=True)
+
+	return result_sorted;
+
+
+
+@app.get("/sales")#, response_model=List[SalesResponse])
+async def get_sales(request: Request):
+	# print(f"{request.query_params=}")
+
+	if "category" not in request.query_params.keys(): #or request.query_params['category'] != 'customers':
+		raise HTTPException(status_code=404, detail="error")
+	elif request.query_params['category'] == 'customers':
+		return customers_sale()
+	elif request.query_params['category'] == 'genres':
+		return genres_sale()
+	else:
+		raise HTTPException(status_code=404, detail="error")
+
+	# print(f"{request.query_params['category']=}")
+
+	#ids = [int(x) for x in request.query_params['category']]
+	# print(f"{ids=}")
+
+	# Parametr ?category=customers zwróci statystykę wydatków poszczególnych klientów sklepu,
+	 # wraz z ich numerem id, adresem email i numerem telefonu, RODO rules ;) .
+
+
+ #    Wyniki mają być filtrowane po sumie wydatków od największych oraz po numerze id klienta.
+
+ #    Suma powinna być zaokrąglona do 2-ch miejsc po przecinku.
+
+
+# SELECT tracks.name, artists.name FROM tracks
+# JOIN albums ON tracks.albumid = albums.albumid
+# JOIN artists ON albums.artistid = artists.artistid;
+
+	# app.db_connection.row_factory = sqlite3.Row
+	# # data = app.db_connection.execute(
+	# # 	"SELECT customers.CustomerId, customers.Email, customers.Phone, invoices.Total AS Sum FROM customers \
+	# # 	JOIN invoices ON customers.CustomerId = invoices.CustomerId \
+	# # 	ORDER BY invoices.Total DESC, customers.CustomerId ASC").fetchall()# \
+
+	# data = app.db_connection.execute(
+	# "SELECT customers.CustomerId, customers.Email, customers.Phone, invoices.Total AS Sum FROM customers \
+	# JOIN invoices ON customers.CustomerId = invoices.CustomerId \
+	# ORDER BY customers.CustomerId ASC").fetchall()
+
+
+	# # print(f"{data=}")
+
+	# first = True
+	# result = []
+	# lastSum = 0
+	# lastCustomer = None
+
+	# for x in data:
+	# 	if first:
+	# 		lastCustomer = x
+	# 		lastSum = x[3]
+	# 		first = False
+	# 		continue
+
+	# 	if x[0] == lastCustomer[0]:
+	# 		lastSum += x[3]
+	# 	else:
+	# 		result.append(
+	# 		SalesResponse(CustomerId=lastCustomer[0], Email=lastCustomer[1], Phone=lastCustomer[2], Sum=round(lastSum, 2))
+	# 		)
+	# 		lastSum = x[3]
+	# 		lastCustomer = x
+
+
+	# 	# result.append(
+	# 	# 	SalesResponse(CustomerId=x[0], Email=x[1], Phone=x[2], Sum=x[3])
+	# 	# 	)
+
+	# # add last guy
+	# result.append(
+	# SalesResponse(CustomerId=lastCustomer[0], Email=lastCustomer[1], Phone=lastCustomer[2], Sum=round(lastSum, 2))
+	# )
+
+	# result_sorted = sorted(result, key=operator.attrgetter("CustomerId"))
+	# result_sorted = sorted(result_sorted, key=operator.attrgetter("Sum"), reverse=True)
+
+	# return result_sorted
 
 	# return data

@@ -99,3 +99,7 @@ class SalesResponse(BaseModel):
 	Email: str
 	Phone: Optional[str]
 	Sum: float
+
+class GenresResponse(BaseModel):
+	Name: str
+	Sum: int
