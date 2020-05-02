@@ -356,10 +356,11 @@ async def get_sales(request: Request):
 	# 	"SELECT customers.CustomerId, customers.Email, customers.Phone, invoices.Total AS Sum FROM customers \
 	# 	JOIN invoices ON customers.CustomerId = invoices.CustomerId \
 	# 	ORDER BY invoices.Total DESC, customers.CustomerId ASC").fetchall()# \
+
 	data = app.db_connection.execute(
 	"SELECT customers.CustomerId, customers.Email, customers.Phone, invoices.Total AS Sum FROM customers \
 	JOIN invoices ON customers.CustomerId = invoices.CustomerId \
-	ORDER BY customers.CustomerId ASC").fetchall()# \
+	ORDER BY customers.CustomerId ASC").fetchall()
 
 
 	# print(f"{data=}")
@@ -382,7 +383,7 @@ async def get_sales(request: Request):
 			result.append(
 			SalesResponse(CustomerId=lastCustomer[0], Email=lastCustomer[1], Phone=lastCustomer[2], Sum=round(lastSum, 2))
 			)
-			lastSum = 0
+			lastSum = x[3]
 			lastCustomer = x
 
 
@@ -392,7 +393,7 @@ async def get_sales(request: Request):
 
 	# add last guy
 	result.append(
-	SalesResponse(CustomerId=lastCustomer[0], Email=lastCustomer[1], Phone=lastCustomer[2], Sum=round(lastSum + lastCustomer[3], 2))
+	SalesResponse(CustomerId=lastCustomer[0], Email=lastCustomer[1], Phone=lastCustomer[2], Sum=round(lastSum, 2))
 	)
 
 	result_sorted = sorted(result, key=operator.attrgetter("CustomerId"))
