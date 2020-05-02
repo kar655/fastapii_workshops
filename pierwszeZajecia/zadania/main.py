@@ -209,17 +209,52 @@ async def get_album(album_id: int):
 #     items[item_id] = jsonable_encoder(updated_item)
 #     return updated_item
 
+
+def customer_update_to_lower(customer: CustomerResponse):
+	return CustomerResponseLower(
+		customerid=customer.CustomerId,
+		firstname=customer.FirstName,
+		lastname=customer.LastName,
+		company=customer.Company,
+		address=customer.Address,
+		city=customer.City,
+		state=customer.State,
+		country=customer.Country,
+		postalcode=customer.PostalCode,
+		phone=customer.Phone,
+		fax=customer.Fax,
+		email=customer.Email,
+		supportrepid=customer.SupportRepId
+		)
+
+def customer_update_to_normal(customer: CustomerResponseLower):
+	return CustomerResponse(
+		CustomerId=customer.customerid,
+		FirstName=customer.firstname,
+		LastName=customer.lastname,
+		Company=customer.company,
+		Address=customer.address,
+		City=customer.city,
+		State=customer.state,
+		Country=customer.country,
+		PostalCode=customer.postalcode,
+		Phone=customer.phone,
+		Fax=customer.fax,
+		Email=customer.email,
+		SupportRepId=customer.supportrepid
+		)
+
 @app.put("/customers/{customer_id}", response_model=CustomerResponse)
 async def update_customer(customer_id: int, new_customer: CustomerUpdate):
 
-	new_customer = CustomerUpdateUpper(
-		Company=new_customer.company, 
-		Address=new_customer.address, 
-		City=new_customer.city, 
-		State=new_customer.state, 
-		Country=new_customer.country, 
-		PostalCode=new_customer.postalcode, 
-		Fax=new_customer.fax)
+	# new_customer = CustomerUpdateUpper(
+	# 	Company=new_customer.company, 
+	# 	Address=new_customer.address, 
+	# 	City=new_customer.city,
+	# 	State=new_customer.state, 
+	# 	Country=new_customer.country, 
+	# 	PostalCode=new_customer.postalcode, 
+	# 	Fax=new_customer.fax)
 
 	# print("PROCESSING")
 	app.db_connection.row_factory = sqlite3.Row
@@ -229,16 +264,22 @@ async def update_customer(customer_id: int, new_customer: CustomerUpdate):
 	if old_customer == None:
 		raise HTTPException(status_code=404, detail="error")
 
-	# print(f"\n{dict(old_customer)=}")
+	print(f"\n{dict(old_customer)=}")
 
 	old_customer_data = dict(old_customer)
-	old_customer_model = CustomerResponse(**old_customer_data)
+	old_customer_model = CustomerResponse(**old_customer_data)	# tak jak w db duze
+
+	#
+	old_customer_model = customer_update_to_lower(old_customer_model)
+
 	# print(f"\n{old_customer_model=}")
 
-	update_data = new_customer.dict(exclude_unset=True)
-	# print(f"\n{update_data=}")
+	update_data = new_customer.dict(exclude_unset=True)	# tutaj None niby sa set
+	print(f"\n{update_data=}")
 
+	# gdy tu nie ma upper to sie nie zmienia bo sa rozne nazwy w dict
 	update_item = old_customer_model.copy(update=update_data)
+
 	# print(f"\n{old_customer_model=}")
 	# print(f"\n{old_customer_model.copy(update=update_data)=}")
 
@@ -247,17 +288,27 @@ async def update_customer(customer_id: int, new_customer: CustomerUpdate):
 	# print("\n\n\n")
 	# print(f"{jsonable_encoder(update_item)=}")
 
-	# print(f"\n{update_item.dict()=}")
-	nowe = CustomerUpdateUpper(**update_item.dict()).dict()
-	nowe.update({"CustomerId": old_customer_model.CustomerId})
+	print(f"\n{update_item.dict()=}")	# dobrze / malymi
+	#nowe = CustomerUpdateUpper(**update_item.dict()).dict()
+	#nowe.update({"CustomerId": old_customer_model.CustomerId})
+
+	nowe = CustomerUpdate(**update_item.dict()).dict()
+	nowe.update({"customerid": old_customer_model.customerid})
 
 	# print(f"\n{nowe=}")
 
 	cursor = app.db_connection.execute(
-		"UPDATE customers SET Company = :Company, Address = :Address,\
-		City = :City, State = :State, Country = :Country,\
-		PostalCode = :PostalCode, Fax = :Fax \
-		WHERE customers.CustomerId = :CustomerId", nowe)
+		"UPDATE customers SET Company = :company, Address = :address,\
+		City = :city, State = :state, Country = :country,\
+		PostalCode = :postalcode, Fax = :fax \
+		WHERE customers.CustomerId = :customerid", nowe)
+
+
+	# cursor = app.db_connection.execute(
+	# 	"UPDATE customers SET Company = :Company, Address = :Address,\
+	# 	City = :City, State = :State, Country = :Country,\
+	# 	PostalCode = :PostalCode, Fax = :Fax \
+	# 	WHERE customers.CustomerId = :CustomerId", nowe)
 
 	app.db_connection.commit()
 
@@ -267,12 +318,12 @@ async def update_customer(customer_id: int, new_customer: CustomerUpdate):
 
 	# print(f"\n{tuple(old_customer21)=}")
 
-	# return update_item
+	return customer_update_to_normal(update_item)
 	# return old_customer_model
 
-	result = app.db_connection.execute(
-		"SELECT * FROM customers WHERE customers.CustomerId = ?", (customer_id,)).fetchone()
-	return result
+	# result = app.db_connection.execute(
+	# 	"SELECT * FROM customers WHERE customers.CustomerId = ?", (customer_id,)).fetchone()
+	# return result
 
 
 @app.get("/sales", response_model=List[SalesResponse])

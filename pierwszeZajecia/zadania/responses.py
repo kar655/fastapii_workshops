@@ -78,6 +78,22 @@ class CustomerResponse(BaseModel):
 	SupportRepId: int = 0
 
 
+class CustomerResponseLower(BaseModel):
+	customerid: int = 0
+	firstname: str = None
+	lastname: str = None
+	company: str = None
+	address: str = None
+	city: str = None
+	state: str = None
+	country: str = None
+	postalcode: str = None
+	phone: str = None
+	fax: str = None
+	email: str = None
+	supportrepid: int = 0
+
+
 class SalesResponse(BaseModel):
 	CustomerId: int
 	Email: str
