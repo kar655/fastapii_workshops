@@ -95,10 +95,11 @@ def add_patient(new_patient: PatientReq):
 
 
 @app.post("/login", status_code=status.HTTP_302_FOUND)
-def login(response: Response, credentials: HTTPBasicCredentials = Depends(security)):
+async def login(response: Response, credentials: HTTPBasicCredentials = Depends(security)):
+	# print(f"wczytalem {credentials.username=}  {credentials.password=}")
+	if secrets.compare_digest(credentials.username, "trudnY") and secrets.compare_digest(credentials.password, "PaC13Nt"):
 
-	if secrets.compare_digest(credentials.username, "trudnY") and secrets.compare_digest(credentials.password, "PaC1Ent"):
-
+		# print("UDALO SIE LOGOWANIE")
 		session_token = sha256(bytes(
 			f"{credentials.username}{credentials.password}{app.secret_key}",
 			encoding="utf8")).hexdigest()
