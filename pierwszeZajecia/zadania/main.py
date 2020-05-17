@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Response, Cookie, Depends, status, Request
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from typing import List
@@ -36,9 +36,25 @@ async def shutdown():
 def root():
 	return RootResponse(message="Hello World during the coronavirus pandemic!")
 
-@app.get("/welcome", response_model=WelcomeResponse)
-def welcome():
-	return WelcomeResponse(message="Welcome!")
+@app.get("/welcome", response_class=HTMLResponse) #response_model=WelcomeResponse)
+async def welcome(response: Response, session_token: str = Cookie(None)):
+	if session_token != app.key:
+		raise HTTPException(status_code=403, detail="Unathorised")
+
+	# data = """<h1 id="greeting">Hello, trudnY!</h1>"""
+
+	# return data
+	# return WelcomeResponse(message="Welcome!")
+
+	return """
+	<html>
+		<head>
+		</head>
+		<body>
+			<h1 id="greeting">Hello, trudnY!</h1>
+		</body>
+	</html>
+	"""
 
 @app.get("/method", response_model=MethodResponse)
 def method():
@@ -100,7 +116,8 @@ def add_patient(new_patient: PatientReq, session_token: str = Cookie(None)):
 @app.post("/login", status_code=status.HTTP_302_FOUND)
 async def login(response: Response, credentials: HTTPBasicCredentials = Depends(security)):
 	# print(f"wczytalem {credentials.username=}  {credentials.password=}")
-	if secrets.compare_digest(credentials.username, "trudnY") and secrets.compare_digest(credentials.password, "PaC13Nt"):
+	if secrets.compare_digest(credentials.username, "trudnY") \
+	and secrets.compare_digest(credentials.password, "PaC13Nt"):
 
 		# print("UDALO SIE LOGOWANIE")
 		session_token = sha256(bytes(
