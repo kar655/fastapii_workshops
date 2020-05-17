@@ -16,7 +16,7 @@ app.secret_key = "random text"
 app.patient_id = 0
 app.patients = []
 
-app.key = sha256(bytes(f"trudnYPaC1Entrandom text",encoding="utf8")).hexdigest()
+app.key = sha256(bytes(f"trudnYPaC13Ntrandom text",encoding="utf8")).hexdigest()
 
 security = HTTPBasic()
 
@@ -58,7 +58,10 @@ def method():
 
 
 @app.post("/patient", response_model=PatientResp)
-def add_patient(new_patient: PatientReq):
+def add_patient(new_patient: PatientReq, session_token: str = Cookie(None)):
+	if session_token != app.key:
+		raise HTTPException(status_code=403, detail="Unathorised")
+
 	app.patient_id += 1
 	app.patients.append(new_patient)
 	return PatientResp(id=app.patient_id - 1, patient=new_patient)
@@ -115,9 +118,12 @@ async def login(response: Response, credentials: HTTPBasicCredentials = Depends(
 
 
 @app.get("/patient/{id}", response_model=PatientReq)
-def get_patient(id: int, session_token: str = Cookie(None)):
-	# if session_token != app.key:
-	# 	raise HTTPException(status_code=403, detail="Unathorised")
+def get_patient(id: int, response: Response, session_token: str = Cookie(None)):
+	if session_token != app.key:
+		# response = RedirectResponse(url="/")
+		# response.status_code = status.HTTP_401_UNAUTHORIZED
+		raise HTTPException(status_code=403, detail="Unathorised")
+		# return response
 	if id < 0 or id >= app.patient_id:
 		raise HTTPException(status_code=204, detail="No Content")
 	return app.patients[id]
@@ -126,12 +132,22 @@ def get_patient(id: int, session_token: str = Cookie(None)):
 
 
 @app.post("/logout")
-def create_cookie(*, response: Response, session_token: str = Cookie(None)):
-	# print(response)
-	# print(session_token)
+async def create_cookie(*, response: Response, session_token: str = Cookie(None)):
 	if session_token != app.key :
 		raise HTTPException(status_code=403, detail="Unathorised")
-	response.set_cookie(key="session_token", value="0")
+
+	print(f"{response=}    {session_token=}")
+	# response.set_cookie(key="session_token", value="0")
+	# response.url = '/'
+	# response.status_code = status.HTTP_302_FOUND
+	# return response
+	# response.delete_cookie("session_token")
+
+
+	newResponse = RedirectResponse(url='/')
+	newResponse.delete_cookie("session_token")
+	newResponse.status_code = status.HTTP_302_FOUND
+	return newResponse
 
 
 #assert resp == [
