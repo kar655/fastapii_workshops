@@ -39,7 +39,7 @@ def root():
 @app.get("/welcome", response_class=HTMLResponse) #response_model=WelcomeResponse)
 async def welcome(response: Response, session_token: str = Cookie(None)):
 	if session_token != app.key:
-		raise HTTPException(status_code=403, detail="Unathorised")
+		raise HTTPException(status_code=401, detail="Unathorised")
 
 	# data = """<h1 id="greeting">Hello, trudnY!</h1>"""
 
